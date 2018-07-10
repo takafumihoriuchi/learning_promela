@@ -13,12 +13,13 @@ show bool doors_open=true;	/* status of elevator doors */
 byte w1_floor = 0;
 byte w1_iam = 0;
 bool w1_doors_open = false;
-ltl no_hunger_w1 { <>(w1_floor == w1_iam && w1_doors_open) }
+ltl no_hunger_w1 { []<>(w1_floor == w1_iam && w1_doors_open) }
 // added codes for problem 3-2
 byte w2_floor = 0;
 byte w2_j = 0;
 bool w2_doors_open = false;
-ltl no_hunger_w2 { <>(w2_floor == w2_j && w2_doors_open) }
+ltl no_hunger_w2 { []<>(w2_floor == w2_j && w2_doors_open) }
+//
 
 active proctype controller()
 {	byte j;
@@ -80,6 +81,7 @@ active [NP] proctype passenger()
 		w1_floor = floor;
 		w1_iam = iam[_pid%NP];
 		w1_doors_open = doors_open;
+		//
 		
 		/* wait to enter elevator */
 W1:		(floor == iam[_pid%NP] && doors_open);
@@ -101,6 +103,7 @@ W1:		(floor == iam[_pid%NP] && doors_open);
 		w2_floor = floor;
 		w2_j = j;
 		w2_doors_open = doors_open;
+		//
 
 		/* wait to exit elevator */
 W2:		(floor == j && doors_open);
