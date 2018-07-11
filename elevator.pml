@@ -10,16 +10,11 @@ show byte floor;		/* elevator position 0 to NF-1 */
 show bool doors_open=true;	/* status of elevator doors */
 
 // added codes for problem 3-2
-byte w1_floor = 0;
-byte w1_iam = 0;
-bool w1_doors_open = false;
-ltl no_hunger_w1 { []<>(w1_floor == w1_iam && w1_doors_open) }
+bool entered_w1[4] = {false, false, false, false};
+ltl no_hunger_w1 { []<>(entered_w1[0]) && []<>(entered_w1[1]) && []<>(entered_w1[2]) && []<>(entered_w1[3]) }
 // added codes for problem 3-2
-byte w2_floor = 0;
-byte w2_j = 0;
-bool w2_doors_open = false;
-ltl no_hunger_w2 { []<>(w2_floor == w2_j && w2_doors_open) }
-//
+bool entered_w2[4] = {false, false, false, false};
+ltl no_hunger_w2 { []<>(entered_w2[0]) && []<>(entered_w2[1]) && []<>(entered_w2[2]) && []<>(entered_w2[3]) }
 
 active proctype controller()
 {	byte j;
@@ -78,13 +73,14 @@ active [NP] proctype passenger()
 	:: ctl!button(iam[_pid%NP]) ->	/* push call button */
 
 		// added codes for problem 3-2
-		w1_floor = floor;
-		w1_iam = iam[_pid%NP];
-		w1_doors_open = doors_open;
-		//
+		entered_w1[_pid%NP] = false;
 		
 		/* wait to enter elevator */
 W1:		(floor == iam[_pid%NP] && doors_open);
+
+		// added codes for problem 3-2
+		entered_w1[_pid%NP] = true;
+
 		printf("MSC: %d enters at floor %d\n", _pid, iam[_pid%NP]);
 		j = 0;	/* choose a destination */
 		do
@@ -100,13 +96,14 @@ W1:		(floor == iam[_pid%NP] && doors_open);
 		ctl!button(j);	/* push destination button */
 
 		// added codes for problem 3-2
-		w2_floor = floor;
-		w2_j = j;
-		w2_doors_open = doors_open;
-		//
+		entered_w2[_pid%NP] = false;
 
 		/* wait to exit elevator */
 W2:		(floor == j && doors_open);
+
+		// added codes for problem 3-2
+		entered_w2[_pid%NP] = true;
+
 		iam[_pid%NP] = j;
 		printf("MSC: %d exits at floor %d\n", _pid, iam[_pid%NP]);
 	od
