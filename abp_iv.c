@@ -179,3 +179,39 @@ init {
     run R();
     run Daemon();
 }
+
+/*
+
+tkf-mbp:assignment02 takafumih$ spin -search -a abp_iv.pml
+pan:1: too many fields in recv (at depth 5)
+pan: wrote abp_iv.pml.trail
+
+(Spin Version 6.4.8 -- 2 March 2018)
+Warning: Search not completed
+    + Partial Order Reduction
+
+Full statespace search for:
+    never claim             - (none specified)
+    assertion violations    +
+    acceptance   cycles     + (fairness disabled)
+    invalid end states  +
+
+State-vector 52 byte, depth reached 5, errors: 1
+        5 states, stored
+        0 states, matched
+        5 transitions (= stored+matched)
+        0 atomic steps
+hash conflicts:         0 (resolved)
+
+Stats on memory usage (in Megabytes):
+    0.000   equivalent memory usage for states (stored*(State-vector + overhead))
+    0.274   actual memory usage for states
+  128.000   memory used for hash table (-w24)
+    0.534   memory used for DFS stack (-m10000)
+  128.730   total actual memory usage
+
+
+
+pan: elapsed time 0 seconds
+
+*/
