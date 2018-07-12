@@ -50,7 +50,6 @@ active proctype Receiver() {
     od
 }
 
-
 /*
 // representation of unreliable channel
 active proctype Daemon() {
