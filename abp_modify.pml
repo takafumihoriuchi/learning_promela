@@ -1,47 +1,71 @@
-#define MAX 100
+chan s2r = [0] of {byte};
 
-mtype = {MSG, ACK};
-chan s2r = [2] of {mtype, byte, bit};
-chan r2s = [2] of {mtype, bit};
-
-
-active proctype Sender() {
-    
-    byte msgid = 0;
-    bit b = 0;
-    bit expected_b;
-
+// sends three kinds of messages (0,1,2)
+// in specific sequence
+proctype S() {
+    byte message;
+    // m0 (zero or more but not infinity)
+    message = 0;
     do
-    :: s2r ! MSG(msgid, b) ->
-       if
-       :: r2s ? ACK(expected_b) -> // 変数名について：正確には、'expected'ではなく、実際に受け取ったもの？
-          if                       // 'expected'なのは、bに入っている値？
-          :: (expected_b == b) ->
-             b = 1 - b;
-             msgid = (msgid + 1) % MAX;
-          :: else
-          fi
-       :: timeout
-       fi
-    od
+    ::  s2r ! message;
+    ::  break;
+    od;
+    // m1
+    message = 1;
+    s2r ! message;
+    // m0 (zero or more but not infinity)
+    message = 0;
+    do
+    ::  s2r ! message;
+    ::  break;
+    od;
+    // m2
+    message = 2;
+    s2r ! message;
+    // m0 (more than once, possibly infinity)
+    message = 0;
+    do
+    ::  s2r ! message;
+    od;
 }
 
+// run by: spin -search -a abp_modify.c
+// when recieve specific sequence
+// passes an accept label infinitely many times
+proctype R() {
+    byte message;
+L1: do
+    :: s2r ? message ->
+        if
+        :: (message == 1) ->
+            do
+            :: s2r ? message ->
+                if
+                :: (message == 2) ->
+                    do
+                    :: s2r ? message ->
+                        if
+                        :: (message == 0) -> // sequence accepted (one m0 at tail)
+accept:                     do // checks for infinite loops
+                            :: s2r ? message -> // sequence accepted (two or more m0 at tail)
+                                if
+                                :: (message == 0) -> skip;
+                                :: (message != 0) -> goto L1;
+                                fi;
+                            od;
+                        :: else -> goto L1;
+                        fi;
+                    od;
+                :: else -> skip;
+                fi;
+            od;
+        :: else -> skip;
+        fi;
+    ::  timeout -> break;
+    od;
+}
 
-active proctype Receiver() {
-    
-    byte msgid;
-    byte expected_msgid = 0;
-    bit b;
-    bit expected_b = 0;
-    
-    do
-    :: s2r ? MSG(msgid, b) ->
-       if
-       :: (b == expected_b) ->
-          expected_b = 1 - expected_b;
-          expected_msgid = (expected_msgid + 1) % MAX;
-       :: else
-       fi;
-       r2s ! ACK(b)
-    od
+init {
+    run S();
+    run R();
 }
